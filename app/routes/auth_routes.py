@@ -132,15 +132,13 @@ def handle_response(response: httpx.Response):
 # ---------------------------
 
 @router.post("/register", status_code=201, response_model=dict)
-async def register(request: Request):
-    validated = RegisterIn(**(await request.json()))
-    response = await forward_request("POST", "/register", request, json_data=validated.dict())
+async def register(register_in: RegisterIn, request: Request):
+    response = await forward_request("POST", "/register", request, json_data=register_in.dict())
     return handle_response(response)
 
 @router.post("/login", response_model=TokenOut)
-async def login(request: Request):
-    validated = LoginIn(**(await request.json()))
-    response = await forward_request("POST", "/login", request, json_data=validated.dict())
+async def login(login_in: LoginIn, request: Request):
+    response = await forward_request("POST", "/login", request, json_data=login_in.dict())
     return handle_response(response)
 
 # ---------------------------
@@ -172,14 +170,13 @@ async def get_user_medico(user_id: str, request: Request, token: HTTPAuthorizati
     return handle_response(response)
 
 @router.put("/admin/user-medico/{user_id}", response_model=UserMedicoUpdateOut)
-async def update_user_medico(user_id: str, request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
-    validated = UserMedicoUpdateIn(**(await request.json()))
+async def update_user_medico(user_id: str, user_medico_update_in: UserMedicoUpdateIn, request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     response = await forward_request(
         "PUT",
         f"/admin/user-medico/{user_id}",
         request,
         requires_auth=True,
-        json_data=validated.dict(),
+        json_data=user_medico_update_in.dict(),
         token=token
     )
     return handle_response(response)
