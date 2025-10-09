@@ -19,7 +19,7 @@ app.add_middleware(
 
 # Incluir rutas de los microservicios
 app.include_router(auth_routes.router, tags=["Autenticación"])
-app.include_router(patient_routes.router, prefix="/patients", tags=["Pacientes"])
+app.include_router(patient_routes.router, tags=["Pacientes"])
 
 @app.get("/")
 def root():
