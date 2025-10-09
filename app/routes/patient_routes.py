@@ -5,7 +5,7 @@ import httpx
 import os
 from typing import Optional, List
 
-router = APIRouter(tags=["patients", "clinical_histories"])
+router = APIRouter()
 security = HTTPBearer(auto_error=False)
 
 PATIENT_SERVICE_URL = os.getenv("PATIENT_URL", "https://patientoncoassist.onrender.com")
