@@ -94,6 +94,9 @@ async def forward_request(
             raise HTTPException(status_code=401, detail="Token de autorización faltante")
         headers["authorization"] = f"Bearer {token.credentials}"
 
+    # Agrega este log antes de la petición HTTP
+    print(f"Reenviando a: {AUTH_SERVICE_URL}{endpoint}")    
+
     async with httpx.AsyncClient() as client:
         try:
             if method == "GET":
