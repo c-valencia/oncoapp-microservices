@@ -84,7 +84,7 @@ async def list_patients(
         params["page_size"] = page_size
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{PATIENT_SERVICE_URL}/patients", params=params, headers={"authorization": f"Bearer {token.credentials}"} if token else {})
+        response = await client.get(f"{PATIENT_SERVICE_URL}/patients/", params=params, headers={"authorization": f"Bearer {token.credentials}"} if token else {})
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
@@ -95,7 +95,7 @@ async def create_patient(
     token: HTTPAuthorizationCredentials = Depends(security)
 ):
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{PATIENT_SERVICE_URL}/patients", json=patient.dict(), headers={"authorization": f"Bearer {token.credentials}"} if token else {})
+        response = await client.post(f"{PATIENT_SERVICE_URL}/patients/", json=patient.dict(), headers={"authorization": f"Bearer {token.credentials}"} if token else {})
     if response.status_code not in (200, 201):
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
@@ -144,7 +144,7 @@ async def create_clinical_history(
     token: HTTPAuthorizationCredentials = Depends(security)
 ):
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{PATIENT_SERVICE_URL}/clinical_histories", json=clinical_history.dict(), headers={"authorization": f"Bearer {token.credentials}"} if token else {})
+        response = await client.post(f"{PATIENT_SERVICE_URL}/clinical_histories/", json=clinical_history.dict(), headers={"authorization": f"Bearer {token.credentials}"} if token else {})
     if response.status_code not in (200, 201):
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
