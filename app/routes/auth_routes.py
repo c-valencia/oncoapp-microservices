@@ -117,15 +117,6 @@ def handle_response(response: httpx.Response):
         return {"message": response.text}
 
 # ---------------------------
-# 🔄 Manejo de errores de validación
-# ---------------------------
-
-@router.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = [ValidationError(loc=e["loc"], msg=e["msg"], type=e["type"]) for e in exc.errors()]
-    return JSONResponse(status_code=422, content=HTTPValidationError(detail=errors).dict())
-
-# ---------------------------
 # 🔐 Rutas públicas
 # ---------------------------
 
