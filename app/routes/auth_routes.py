@@ -133,15 +133,13 @@ def handle_response(response: httpx.Response):
 
 @router.post("/register", status_code=201, response_model=dict)
 async def register(request: Request):
-    body = await request.json()
-    validated = RegisterIn(**body)
+    validated = RegisterIn(**(await request.json()))
     response = await forward_request("POST", "/register", request, json_data=validated.dict())
     return handle_response(response)
 
 @router.post("/login", response_model=TokenOut)
 async def login(request: Request):
-    body = await request.json()
-    validated = LoginIn(**body)
+    validated = LoginIn(**(await request.json()))
     response = await forward_request("POST", "/login", request, json_data=validated.dict())
     return handle_response(response)
 
@@ -175,8 +173,7 @@ async def get_user_medico(user_id: str, request: Request, token: HTTPAuthorizati
 
 @router.put("/admin/user-medico/{user_id}", response_model=UserMedicoUpdateOut)
 async def update_user_medico(user_id: str, request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
-    body = await request.json()
-    validated = UserMedicoUpdateIn(**body)
+    validated = UserMedicoUpdateIn(**(await request.json()))
     response = await forward_request(
         "PUT",
         f"/admin/user-medico/{user_id}",
