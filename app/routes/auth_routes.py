@@ -8,7 +8,7 @@ import os
 router = APIRouter()
 AUTH_SERVICE_URL = os.getenv("AUTH_URL", "https://oncoapp-239j.onrender.com")
 security = HTTPBearer(auto_error=False)
-
+print("Auth service URL:", AUTH_SERVICE_URL)
 # ---------------------------
 # 🔐 Schemas Pydantic
 # ---------------------------
