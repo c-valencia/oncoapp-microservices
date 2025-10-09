@@ -86,16 +86,14 @@ async def forward_request(
     params: dict | None = None,
     token: HTTPAuthorizationCredentials | None = None
 ):
-    headers = dict(request.headers)
-    headers.pop("content-length", None)  # Evita errores de Content-Length
-
-    if requires_auth:
-        if not token:
-            raise HTTPException(status_code=401, detail="Token de autorización faltante")
+    # Solo los headers necesarios
+    headers = {
+        "content-type": "application/json"
+    }
+    if requires_auth and token:
         headers["authorization"] = f"Bearer {token.credentials}"
 
-    # Agrega este log antes de la petición HTTP
-    print(f"Reenviando a: {AUTH_SERVICE_URL}{endpoint}")    
+    print(f"Reenviando a: {AUTH_SERVICE_URL}{endpoint}")
 
     async with httpx.AsyncClient() as client:
         try:
@@ -141,16 +139,6 @@ async def register(register_in: RegisterIn, request: Request):
 
 @router.post("/login", response_model=TokenOut)
 async def login(login_in: LoginIn, request: Request):
-    # Prueba directa de conectividad (solo para depuración)
-    async with httpx.AsyncClient() as client:
-        test_url = f"{AUTH_SERVICE_URL}/login"
-        test_data = {"email": login_in.email, "password": login_in.password}
-        try:
-            test_response = await client.post(test_url, json=test_data)
-            print("Prueba directa - Código de respuesta:", test_response.status_code)
-            print("Prueba directa - Respuesta:", test_response.text)
-        except Exception as e:
-            print("Prueba directa - Error:", e)
     response = await forward_request("POST", "/login", request, json_data=login_in.dict())
     return handle_response(response)
 
