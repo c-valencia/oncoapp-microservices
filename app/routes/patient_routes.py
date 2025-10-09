@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, Query, Path
+from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 import httpx
@@ -50,13 +50,11 @@ class HTTPValidationError(BaseModel):
     detail: list[ValidationError]
 
 class ClinicalHistoryCreate(BaseModel):
-    # Define los campos según tu OpenAPI
     document_id: str
     stage_at_diagnosis: str
     tumor_aggressiveness: str
     treatment_access: str
     follow_up_adherence: str
-    # ...otros campos opcionales según tu especificación...
 
 class ClinicalHistoryRead(ClinicalHistoryCreate):
     id: int
@@ -64,18 +62,16 @@ class ClinicalHistoryRead(ClinicalHistoryCreate):
     edited: str
 
 class ClinicalHistoryUpdate(BaseModel):
-    # Todos los campos opcionales
     stage_at_diagnosis: Optional[str] = None
     tumor_aggressiveness: Optional[str] = None
     treatment_access: Optional[str] = None
     follow_up_adherence: Optional[str] = None
-    # ...otros campos opcionales...
 
 # ---------------------------
 # 📁 PACIENTES
 # ---------------------------
 
-@router.get("/patients/", response_model=List[PatientRead], tags=["patients"])
+@router.get("/patients/", response_model=List[PatientRead])
 async def list_patients(
     page: Optional[int] = Query(None, title="Page"),
     page_size: Optional[int] = Query(None, title="Page Size"),
@@ -93,7 +89,7 @@ async def list_patients(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.post("/patients/", response_model=PatientRead, status_code=201, tags=["patients"])
+@router.post("/patients/", response_model=PatientRead, status_code=201)
 async def create_patient(
     patient: PatientCreate,
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -104,7 +100,7 @@ async def create_patient(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.get("/patients/{document_id}", response_model=PatientRead, tags=["patients"])
+@router.get("/patients/{document_id}", response_model=PatientRead)
 async def get_patient(
     document_id: str = Path(..., title="Document Id"),
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -115,7 +111,7 @@ async def get_patient(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.patch("/patients/{document_id}", response_model=PatientRead, tags=["patients"])
+@router.patch("/patients/{document_id}", response_model=PatientRead)
 async def update_patient(
     document_id: str = Path(..., title="Document Id"),
     patient_update: PatientUpdate = None,
@@ -127,7 +123,7 @@ async def update_patient(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.delete("/patients/{document_id}", status_code=204, tags=["patients"])
+@router.delete("/patients/{document_id}", status_code=204)
 async def delete_patient(
     document_id: str = Path(..., title="Document Id"),
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -142,7 +138,7 @@ async def delete_patient(
 # 📁 HISTORIALES CLÍNICOS
 # ---------------------------
 
-@router.post("/clinical_histories/", response_model=ClinicalHistoryRead, status_code=201, tags=["clinical_histories"])
+@router.post("/clinical_histories/", response_model=ClinicalHistoryRead, status_code=201)
 async def create_clinical_history(
     clinical_history: ClinicalHistoryCreate,
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -153,7 +149,7 @@ async def create_clinical_history(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.get("/clinical_histories/{history_id}", response_model=ClinicalHistoryRead, tags=["clinical_histories"])
+@router.get("/clinical_histories/{history_id}", response_model=ClinicalHistoryRead)
 async def get_clinical_history(
     history_id: int = Path(..., title="History Id"),
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -164,7 +160,7 @@ async def get_clinical_history(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.patch("/clinical_histories/{history_id}", response_model=ClinicalHistoryRead, tags=["clinical_histories"])
+@router.patch("/clinical_histories/{history_id}", response_model=ClinicalHistoryRead)
 async def update_clinical_history(
     history_id: int = Path(..., title="History Id"),
     clinical_history_update: ClinicalHistoryUpdate = None,
@@ -176,7 +172,7 @@ async def update_clinical_history(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
 
-@router.delete("/clinical_histories/{history_id}", status_code=204, tags=["clinical_histories"])
+@router.delete("/clinical_histories/{history_id}", status_code=204)
 async def delete_clinical_history(
     history_id: int = Path(..., title="History Id"),
     token: HTTPAuthorizationCredentials = Depends(security)
@@ -187,7 +183,7 @@ async def delete_clinical_history(
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return None
 
-@router.get("/clinical_histories/document/{document_id}", response_model=List[ClinicalHistoryRead], tags=["clinical_histories"])
+@router.get("/clinical_histories/document/{document_id}", response_model=List[ClinicalHistoryRead])
 async def get_histories_by_document(
     document_id: str = Path(..., title="Document Id"),
     token: HTTPAuthorizationCredentials = Depends(security)
