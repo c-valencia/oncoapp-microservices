@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request, HTTPException, Query, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
 import httpx
 import os
@@ -83,11 +82,13 @@ async def forward_request(
     endpoint: str,
     request: Request,
     requires_auth: bool = False,
-    json_data: dict = None,
-    params: dict = None,
+    json_data: dict | None = None,
+    params: dict | None = None,
     token: HTTPAuthorizationCredentials | None = None
 ):
     headers = dict(request.headers)
+    headers.pop("content-length", None)  # Evita errores de Content-Length
+
     if requires_auth:
         if not token:
             raise HTTPException(status_code=401, detail="Token de autorización faltante")
@@ -96,13 +97,20 @@ async def forward_request(
     async with httpx.AsyncClient() as client:
         try:
             if method == "GET":
-                return await client.get(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, params=params or request.query_params)
-            elif method == "POST":
+                return await client.get(
+                    f"{AUTH_SERVICE_URL}{endpoint}",
+                    headers=headers,
+                    params=params or request.query_params
+                )
+            elif method in ["POST", "PUT", "PATCH"]:
                 data = json_data or await request.json()
-                return await client.post(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, json=data)
-            elif method == "PUT":
-                data = json_data or await request.json()
-                return await client.put(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, json=data)
+                data = data or {}
+                if method == "POST":
+                    return await client.post(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, json=data)
+                elif method == "PUT":
+                    return await client.put(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, json=data)
+                else:
+                    return await client.patch(f"{AUTH_SERVICE_URL}{endpoint}", headers=headers, json=data)
             else:
                 raise HTTPException(status_code=405, detail="Método no permitido")
         except httpx.RequestError as e:
@@ -110,7 +118,10 @@ async def forward_request(
 
 def handle_response(response: httpx.Response):
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        try:
+            return JSONResponse(status_code=response.status_code, content=response.json())
+        except Exception:
+            return JSONResponse(status_code=response.status_code, content={"detail": response.text})
     try:
         return response.json()
     except Exception:
@@ -166,7 +177,14 @@ async def get_user_medico(user_id: str, request: Request, token: HTTPAuthorizati
 async def update_user_medico(user_id: str, request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     body = await request.json()
     validated = UserMedicoUpdateIn(**body)
-    response = await forward_request("PUT", f"/admin/user-medico/{user_id}", request, requires_auth=True, json_data=validated.dict(), token=token)
+    response = await forward_request(
+        "PUT",
+        f"/admin/user-medico/{user_id}",
+        request,
+        requires_auth=True,
+        json_data=validated.dict(),
+        token=token
+    )
     return handle_response(response)
 
 # ---------------------------
