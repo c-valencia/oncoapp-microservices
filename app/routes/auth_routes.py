@@ -141,6 +141,16 @@ async def register(register_in: RegisterIn, request: Request):
 
 @router.post("/login", response_model=TokenOut)
 async def login(login_in: LoginIn, request: Request):
+    # Prueba directa de conectividad (solo para depuración)
+    async with httpx.AsyncClient() as client:
+        test_url = f"{AUTH_SERVICE_URL}/login"
+        test_data = {"email": login_in.email, "password": login_in.password}
+        try:
+            test_response = await client.post(test_url, json=test_data)
+            print("Prueba directa - Código de respuesta:", test_response.status_code)
+            print("Prueba directa - Respuesta:", test_response.text)
+        except Exception as e:
+            print("Prueba directa - Error:", e)
     response = await forward_request("POST", "/login", request, json_data=login_in.dict())
     return handle_response(response)
 
