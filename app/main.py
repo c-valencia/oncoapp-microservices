@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth_routes, patient_routes
+from app.routes import auth_routes, patient_routes, recommendation_routes
 
 app = FastAPI(
     title="OncoApp API Gateway",
@@ -20,6 +20,7 @@ app.add_middleware(
 # Incluir rutas de los microservicios
 app.include_router(auth_routes.router, tags=["Autenticación"])
 app.include_router(patient_routes.router, tags=["Pacientes"])
+app.include_router(recommendation_routes.router, tags=["Recomendaciones"])
 
 @app.get("/")
 def root():
